@@ -50,3 +50,24 @@ class PatientWithHistory(PatientResponse):
 
     class Config:
         from_attributes = True
+
+class NotificationBase(BaseModel):
+    notification_type: str = Field(..., example="Status Update")
+    message: str = Field(..., example="Your appointment is confirmed.")
+
+class NotificationCreate(NotificationBase):
+    patient_id: int
+    appointment_id: Optional[int] = None
+    status: str = "Sent"
+
+class NotificationResponse(NotificationBase):
+    id: int
+    patient_id: int
+    appointment_id: Optional[int] = None
+    status: str
+    sent_at: datetime.datetime
+    patient: Optional[PatientResponse] = None
+
+    class Config:
+        from_attributes = True
+

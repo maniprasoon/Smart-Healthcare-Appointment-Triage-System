@@ -14,6 +14,7 @@ class Patient(Base):
     contact = Column(String)
 
     appointments = relationship("Appointment", back_populates="patient", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="patient", cascade="all, delete-orphan")
 
 class Appointment(Base):
     __tablename__ = "appointments"
@@ -26,3 +27,16 @@ class Appointment(Base):
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
     patient = relationship("Patient", back_populates="appointments")
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True)
+    notification_type = Column(String) # e.g., 'Status Update', 'Reminder', 'Confirmation'
+    message = Column(String)
+    status = Column(String, default="Sent") # e.g., 'Sent', 'Pending', 'Failed'
+    sent_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+
+    patient = relationship("Patient", back_populates="notifications")

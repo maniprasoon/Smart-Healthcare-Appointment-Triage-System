@@ -96,3 +96,22 @@ def cancel_appointment(id: int, db: Session = Depends(get_db)):
     if not db_appointment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found")
     return None
+
+@app.post("/notifications", response_model=schemas.NotificationResponse, status_code=status.HTTP_201_CREATED)
+def send_notification(request: schemas.NotificationCreate, db: Session = Depends(get_db)):
+    """
+    Simulate sending a notification to a patient and log it.
+    """
+    db_patient = crud.get_patient(db, patient_id=request.patient_id)
+    if not db_patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+        
+    db_notification = crud.create_notification(db, notification=request)
+    return db_notification
+
+@app.get("/notifications", response_model=List[schemas.NotificationResponse])
+def get_notifications_log(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve the log of all sent notifications.
+    """
+    return crud.get_notifications(db, skip=skip, limit=limit)

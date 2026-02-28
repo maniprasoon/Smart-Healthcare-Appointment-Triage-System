@@ -13,7 +13,7 @@ const getPriorityConfig = (level) => {
     }
 };
 
-const QueueDashboard = ({ appointments, loading, onDischarge }) => {
+const QueueDashboard = ({ appointments, loading, onDischarge, onNotify }) => {
     if (loading && appointments.length === 0) {
         return (
             <div className="h-64 flex flex-col items-center justify-center text-slate-400">
@@ -69,6 +69,7 @@ const QueueDashboard = ({ appointments, loading, onDischarge }) => {
                             score={score}
                             barCol={barCol}
                             onDischarge={onDischarge}
+                            onNotify={() => onNotify(appt.patient_id)}
                         />
                     );
                 })}

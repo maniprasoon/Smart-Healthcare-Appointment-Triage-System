@@ -19,6 +19,16 @@ def create_patient(db: Session, patient: schemas.PatientCreate):
 def get_all_patients(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Patient).offset(skip).limit(limit).all()
 
+def create_notification(db: Session, notification: schemas.NotificationCreate):
+    db_notification = models.Notification(**notification.model_dump())
+    db.add(db_notification)
+    db.commit()
+    db.refresh(db_notification)
+    return db_notification
+
+def get_notifications(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Notification).order_by(models.Notification.sent_at.desc()).offset(skip).limit(limit).all()
+
 def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     db_appointment = models.Appointment(**appointment.model_dump())
     db.add(db_appointment)

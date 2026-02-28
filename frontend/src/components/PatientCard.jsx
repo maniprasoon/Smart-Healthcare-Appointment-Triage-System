@@ -1,7 +1,7 @@
 import React from 'react';
-import { Clock, AlertTriangle, User, Activity, CheckCircle2 } from 'lucide-react';
+import { Clock, AlertTriangle, User, Activity, CheckCircle2, Send } from 'lucide-react';
 
-const PatientCard = ({ patient, index, isEmergency, score, barCol, onDischarge }) => {
+const PatientCard = ({ patient, index, isEmergency, score, barCol, onDischarge, onNotify }) => {
     return (
         <div className={`relative overflow-hidden group transition-all duration-300 rounded-3xl ${isEmergency
             ? 'bg-gradient-to-br from-red-50 to-white border-2 border-red-500 shadow-[0_4px_20px_rgba(239,68,68,0.25)] z-10'
@@ -27,7 +27,7 @@ const PatientCard = ({ patient, index, isEmergency, score, barCol, onDischarge }
                     <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <h3 className={`font-black text-xl truncate ${isEmergency ? 'text-red-950' : 'text-slate-900'}`}>
-                                {patient.patient?.name || `Patient #${patient.patient_id}`}
+                                {patient.patient?.name || `Patient #${patient.patient_id}`} <span className="text-sm font-bold text-slate-400 opacity-60 ml-1">#{patient.patient_id}</span>
                             </h3>
                             {/* Badge */}
                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isEmergency ? 'bg-red-600 text-white shadow-md' :
@@ -67,16 +67,25 @@ const PatientCard = ({ patient, index, isEmergency, score, barCol, onDischarge }
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => onDischarge && onDischarge(patient.id)}
-                        className={`mt-4 w-full py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center active:scale-95 ${isEmergency
-                            ? 'bg-red-100 hover:bg-red-200 text-red-700'
-                            : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
-                            }`}
-                    >
-                        <CheckCircle2 size={16} className="mr-1.5" />
-                        Discharge
-                    </button>
+                    <div className="flex flex-col gap-2 mt-4">
+                        <button
+                            onClick={() => onNotify && onNotify()}
+                            className="w-full py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center active:scale-95 bg-purple-100 hover:bg-purple-200 text-purple-700"
+                        >
+                            <Send size={16} className="mr-1.5" />
+                            Notify
+                        </button>
+                        <button
+                            onClick={() => onDischarge && onDischarge(patient.id)}
+                            className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center active:scale-95 ${isEmergency
+                                ? 'bg-red-100 hover:bg-red-200 text-red-700'
+                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
+                                }`}
+                        >
+                            <CheckCircle2 size={16} className="mr-1.5" />
+                            Discharge
+                        </button>
+                    </div>
                 </div>
 
             </div>

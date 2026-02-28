@@ -5,12 +5,16 @@ import BookingForm from '../components/BookingForm';
 import QueueDashboard from '../components/QueueDashboard';
 import StatsPanel from '../components/StatsPanel';
 import PatientHistory from '../components/PatientHistory';
+import SendNotification from '../components/SendNotification';
+import NotificationLog from '../components/NotificationLog';
 import api from '../api';
 
 const Dashboard = () => {
     const [appointments, setAppointments] = useState([]);
+    const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
+    const [selectedPatientForNotification, setSelectedPatientForNotification] = useState(null);
     const [profileName, setProfileName] = useState(() => localStorage.getItem('profileName') || 'Dr. Sarah Jenkins');
     const [profileRole, setProfileRole] = useState(() => localStorage.getItem('profileRole') || 'Head of Triage');
 
@@ -24,10 +28,14 @@ const Dashboard = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await api.get('/appointments');
-            setAppointments(response.data);
+            const [appointmentsRes, patientsRes] = await Promise.all([
+                api.get('/appointments'),
+                api.get('/patients')
+            ]);
+            setAppointments(appointmentsRes.data);
+            setPatients(patientsRes.data);
         } catch (error) {
-            console.error("Error fetching appointments:", error);
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
@@ -51,6 +59,11 @@ const Dashboard = () => {
 
     const handleProfileEdit = () => {
         setActiveTab('settings');
+    };
+
+    const handleNotifyPatient = (patientId) => {
+        setSelectedPatientForNotification(patientId);
+        setActiveTab('send-notification');
     };
 
     const getInitials = (name) => {
@@ -80,7 +93,7 @@ const Dashboard = () => {
 
                             {/* Queue Dashboard - Right Side (8 columns) */}
                             <div className="xl:col-span-8">
-                                <QueueDashboard appointments={appointments} loading={loading} onDischarge={handleDischarge} />
+                                <QueueDashboard appointments={appointments} loading={loading} onDischarge={handleDischarge} onNotify={handleNotifyPatient} />
                             </div>
                         </div>
                     </div>
@@ -95,13 +108,29 @@ const Dashboard = () => {
                 return (
                     <div className="space-y-8 max-w-5xl mx-auto">
                         <StatsPanel appointments={appointments} />
-                        <QueueDashboard appointments={appointments} loading={loading} onDischarge={handleDischarge} />
+                        <QueueDashboard appointments={appointments} loading={loading} onDischarge={handleDischarge} onNotify={handleNotifyPatient} />
                     </div>
                 );
             case 'history':
                 return (
                     <div className="max-w-6xl mx-auto mt-2">
                         <PatientHistory />
+                    </div>
+                );
+            case 'send-notification':
+                return (
+                    <div className="max-w-4xl mx-auto mt-8">
+                        <SendNotification
+                            patients={patients}
+                            defaultPatientId={selectedPatientForNotification}
+                            onSuccess={() => setActiveTab('notification-log')}
+                        />
+                    </div>
+                );
+            case 'notification-log':
+                return (
+                    <div className="max-w-6xl mx-auto mt-2">
+                        <NotificationLog />
                     </div>
                 );
             case 'settings':
@@ -183,6 +212,16 @@ const Dashboard = () => {
                     <button onClick={() => setActiveTab('history')} className={navItemClass('history')}>
                         <History size={20} className={activeTab === 'history' ? 'text-blue-500' : ''} />
                         <span>Patient History</span>
+                    </button>
+
+                    <div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 mt-8">Notifications</div>
+                    <button onClick={() => { setActiveTab('send-notification'); setSelectedPatientForNotification(null); }} className={navItemClass('send-notification')}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={activeTab === 'send-notification' ? 'text-blue-500' : ''}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span>Send Notification</span>
+                    </button>
+                    <button onClick={() => setActiveTab('notification-log')} className={navItemClass('notification-log')}>
+                        <History size={20} className={activeTab === 'notification-log' ? 'text-blue-500' : ''} />
+                        <span>Notification Log</span>
                     </button>
 
                     <div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 mt-8">System</div>
